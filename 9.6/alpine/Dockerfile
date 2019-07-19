@@ -1,6 +1,8 @@
 # vim:set ft=dockerfile:
 FROM alpine:3.10
 
+COPY mfpgex.c /usr/src/mfpgex.c
+
 # alpine includes "postgres" user/group in base install
 #   /etc/passwd:22:postgres:x:70:70::/var/lib/postgresql:/bin/sh
 #   /etc/group:34:postgres:x:70:
@@ -112,6 +114,9 @@ RUN set -ex \
 	&& make -j "$(nproc)" world \
 	&& make install-world \
 	&& make -C contrib install \
+# mfpgex
+	&& gcc -fpic -c /usr/src/mfpgex.c -Isrc/include \
+	&& gcc -shared -o /usr/lib/mfpgex.so mfpgex.o \
 	\
 	&& runDeps="$( \
 		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local \
